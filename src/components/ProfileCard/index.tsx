@@ -1,6 +1,7 @@
 import { ProfileCardItem } from '@/types'
 
 export const ProfileCard = ({
+  id,
   name,
   photo,
   email,
@@ -8,9 +9,12 @@ export const ProfileCard = ({
   onButtonClick,
   onClick,
 }: ProfileCardItem) => {
+  const handleClick = () => onClick(id)
+  const handleButtonClick = () => onButtonClick(id)
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       className="flex flex-col rounded-md justify-end m-2 overflow-hidden cursor-pointer"
       style={{
         width: '180px',
@@ -28,7 +32,7 @@ export const ProfileCard = ({
             </div>
             <div>
               <button
-                onClick={onButtonClick}
+                onClick={handleButtonClick}
                 className="bg-white px-1.5 rounded-xl text-xs text-text-default"
               >
                 {buttonMod}

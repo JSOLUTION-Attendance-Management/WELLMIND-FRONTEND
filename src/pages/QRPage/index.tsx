@@ -1,38 +1,29 @@
 import { useEffect, useState } from 'react'
 
-import QR from '@/assets/qr.png'
+import LoadingPage from '@/pages/LoadingPage'
+import QR from '@/pages/QRPage/QR'
 
 export default function QRPage() {
-  const [time, setTime] = useState(300)
+  const [longitude, setLongitude] = useState<string | null>(null)
+  const [latitude, setLatitude] = useState<string | null>(null)
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime((prevTime) => {
-        if (prevTime <= 0) {
-          clearInterval(timer)
-          return 0
-        }
-        return prevTime - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
+    const successCallback = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords
+      setLatitude(latitude.toString())
+      setLongitude(longitude.toString())
+    }
+    const errorCallback = () => {
+      alert('위치를 허용해주세요')
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(successCallback, errorCallback)
+    }
   }, [])
 
-  const minutes = Math.floor(time / 60)
-  const seconds = time % 60
-  const formattedTime = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+  if (longitude === null || latitude === null) {
+    return <LoadingPage />
+  }
 
-  return (
-    <div className="flex flex-col justify-center items-center mt-8 gap-10">
-      <div className="flex flex-col text-center gap-2">
-        <div className="text-text-default text-4xl font-semibold">
-          QR 코드 생성
-        </div>
-        <div className="text-default-red text-2xl">{formattedTime}</div>
-      </div>
-      <img className="w-96 h-96" src={QR} alt="qr" />
-      {/* <div className="w-96 h-96 bg-text-gray"></div> */}
-    </div>
-  )
+  return <QR longitude={longitude} latitude={latitude} />
 }

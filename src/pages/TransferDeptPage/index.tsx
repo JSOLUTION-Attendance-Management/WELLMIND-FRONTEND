@@ -2,21 +2,42 @@ import { useEffect, useState } from 'react'
 
 import { ColumnDef } from '@tanstack/react-table'
 
+import { useGetMyTransfer } from '@/api/services/transfer/myTransfer.api'
 import { Pagination } from '@/components/Pagination'
 import CommuteTable from '@/components/ReportTable/CommuteTable'
+import LoadingPage from '@/pages/LoadingPage'
+import { transformGroupedData } from '@/pages/TransferDeptPage/transformGroupedData'
 import { TransferDeptItem, TransferDeptTable } from '@/types'
 
 export default function TransferDeptPage() {
   const [reports, setReports] = useState<TransferDeptTable>([])
   const [tableList, setTableList] = useState<TransferDeptTable>()
-
-  useEffect(() => {
-    setReports(dummydata)
-  }, [])
+  const [currentPage, setCurrentPage] = useState(0)
+  const {
+    data: Transfer,
+    isLoading,
+    isPending,
+    error,
+  } = useGetMyTransfer({ page: currentPage, size: 9 })
 
   useEffect(() => {
     setTableList(reports)
   }, [reports])
+
+  useEffect(() => {
+    if (Transfer && Transfer.content.length > 0) {
+      const transformedData = transformGroupedData({
+        transferData: Transfer.content,
+      })
+      setReports(transformedData)
+    } else {
+      setReports([])
+    }
+  }, [Transfer])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page - 1)
+  }
 
   const columns: ColumnDef<TransferDeptItem>[] = [
     { accessorKey: 'id', enableHiding: true },
@@ -27,6 +48,9 @@ export default function TransferDeptPage() {
     { header: '사유', accessorKey: 'reason' },
     { header: '상신자', accessorKey: 'recipient' },
   ]
+
+  if (isLoading || isPending) return <LoadingPage />
+  if (error) throw Error()
 
   return (
     <div className="w-full py-5 flex flex-col gap-5">
@@ -40,37 +64,11 @@ export default function TransferDeptPage() {
           <CommuteTable reports={tableList} columns={columns} />
         )}
       </div>
-      <Pagination currentPage={1} totalPage={11} />
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPage={Transfer?.totalPages ?? 1}
+        onPageChange={handlePageChange}
+      />
     </div>
   )
 }
-
-const dummydata = [
-  {
-    id: '1',
-    date: '2019-05-02',
-    type: '입사',
-    previous: '',
-    update: 'IT부서/사원',
-    reason: '개발팀 입사',
-    recipient: '박지현',
-  },
-  {
-    id: '2',
-    date: '2022-02-27',
-    type: '진급',
-    previous: 'IT부서/사원',
-    update: 'IT부서/대리',
-    reason: '승진',
-    recipient: '박지현',
-  },
-  {
-    id: '3',
-    date: '2024-11-04',
-    type: '부서 이동',
-    previous: 'IT부서/대리',
-    update: '앱개발팀/대리',
-    reason: '프로젝트 필요',
-    recipient: '박지현',
-  },
-]

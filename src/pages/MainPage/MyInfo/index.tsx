@@ -1,52 +1,68 @@
 import { BiEnvelope, BiHome, BiPencil, BiPhone } from 'react-icons/bi'
 
-export default function MyInfo() {
+import { MyProfileResponse } from '@/types'
+
+type MyInfoProps = {
+  profile: MyProfileResponse['data']
+}
+
+export default function MyInfo({ profile }: MyInfoProps) {
   return (
     <div className="flex gap-12">
-      <img
-        className="rounded-sm object-cover"
-        src="https://ifh.cc/g/PVdXh3.jpg"
-        alt="myphoto"
-        style={{ width: '200px', height: '280px' }}
-      />
+      {profile.photo ? (
+        <img
+          className="rounded-sm object-cover"
+          src={profile.photo}
+          alt="myphoto"
+          style={{ width: '200px', height: '280px' }}
+        />
+      ) : (
+        <div style={{ width: '200px', height: '280px' }} />
+      )}
       <div className="flex justify-between flex-1 relative">
         <div className="flex flex-col gap-6 py-3">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-4">
-              <div className="text-4xl font-bold text-text-default">안희정</div>
-              <div className="text-text-white text-xs bg-default-lightRed px-2 py-1 rounded-sm">
-                관리자
+              <div className="text-3xl font-bold text-text-default">
+                {profile.name}
+              </div>
+              <div
+                className={`text-text-white text-xs px-2 py-1 rounded-sm ${
+                  profile.authType === 'N'
+                    ? 'bg-default-mint'
+                    : 'bg-default-lightRed'
+                }`}
+              >
+                {profile.authType === 'N' ? '직원' : '관리자'}
               </div>
             </div>
             <div className="text-primary-400 text-xl font-bold">
-              IT부서 주임
+              {`${profile.departName} ${profile.positionName}`}
             </div>
           </div>
           <div className="flex flex-col text-lg font-semibold gap-3">
-            <div className="flex justify-between">
+            <div className="flex gap-14">
               <div>
                 <div>
                   <BiEnvelope className="w-6 h-6 text-text-gray" />
                 </div>
                 <div>
-                  <div>eyrt6973@naver.com</div>
+                  <div>{profile.email}</div>
                 </div>
               </div>
               <div>
                 <div>
                   <BiPhone className="w-6 h-6 text-text-gray" />
                 </div>
-                <div>010-5513-7514</div>
+                <div>{profile.phoneNum}</div>
               </div>
             </div>
             <div>
               <div>
                 <BiHome className="w-6 h-6 text-text-gray" />
               </div>
-              <div>42615</div>
-              <div>
-                대구광역시 달서구 선원남로 77(이곡동, 한샘타운) 105동 506호
-              </div>
+              <div>{profile.address?.postalCode}</div>
+              <div>{`${profile.address?.address} ${profile.address?.address_detail}`}</div>
             </div>
           </div>
         </div>

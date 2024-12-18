@@ -3,21 +3,73 @@ import { BiSearch } from 'react-icons/bi'
 
 import { ColumnDef } from '@tanstack/react-table'
 
+import { useGetAttend } from '@/api/services/attendances/commute.api'
 import { Pagination } from '@/components/Pagination'
 import CommuteTable from '@/components/ReportTable/CommuteTable'
-import { CommuteReportItem, CommuteReportTable } from '@/types'
+import { transformGroupedData } from '@/pages/CommutePage/transformGroupedData'
+import LoadingPage from '@/pages/LoadingPage'
+import { CommuteItem, CommuteReportItem, CommuteReportTable } from '@/types'
+
+type GroupedData = {
+  date: string
+  items: CommuteItem[]
+}[]
 
 export default function CommutePage() {
   const [reports, setReports] = useState<CommuteReportTable>([])
   const [tableList, setTableList] = useState<CommuteReportTable>()
+  const [groupedData, setGroupedData] = useState<GroupedData>([])
+  const [currentPage, setCurrentPage] = useState(0)
 
-  useEffect(() => {
-    setReports(dummydata)
-  }, [])
+  const {
+    data: AttendData,
+    isLoading,
+    isPending,
+    error,
+  } = useGetAttend({ page: currentPage, size: 9 })
 
   useEffect(() => {
     setTableList(reports)
   }, [reports])
+
+  useEffect(() => {
+    if (AttendData?.content && AttendData.content.length > 0) {
+      const grouped = groupDataByDate(AttendData.content)
+      setGroupedData(grouped)
+    } else {
+      setGroupedData([])
+    }
+  }, [AttendData])
+
+  useEffect(() => {
+    if (groupedData.length > 0) {
+      const transformedData = transformGroupedData(groupedData)
+      setReports(transformedData)
+    } else {
+      setReports([])
+    }
+  }, [groupedData])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page - 1)
+  }
+
+  if (isLoading || isPending) return <LoadingPage />
+  if (error) {
+    throw new Error('Error loading data')
+  }
+
+  function groupDataByDate(data: CommuteItem[]): GroupedData {
+    return data.reduce<GroupedData>((acc, curr) => {
+      const group = acc.find((g) => g.date === curr.date)
+      if (group) {
+        group.items.push(curr)
+      } else {
+        acc.push({ date: curr.date, items: [curr] })
+      }
+      return acc
+    }, [])
+  }
 
   const columns: ColumnDef<CommuteReportItem>[] = [
     { accessorKey: 'id', enableHiding: true },
@@ -55,86 +107,15 @@ export default function CommutePage() {
         </div>
       </div>
       <div className="px-10">
-        {reports && tableList && (
-          <CommuteTable reports={tableList} columns={columns} />
+        {tableList && reports.length > 0 && (
+          <CommuteTable reports={reports} columns={columns} />
         )}
       </div>
-      <Pagination currentPage={1} totalPage={11} />
+      <Pagination
+        currentPage={currentPage + 1}
+        totalPage={AttendData?.totalPages ?? 1}
+        onPageChange={handlePageChange}
+      />
     </div>
   )
 }
-
-const dummydata = [
-  {
-    id: '1',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '2',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '09:02',
-    leaveTime: '18:02',
-    isLate: true,
-  },
-  {
-    id: '3',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '4',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '5',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '6',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '09:31',
-    leaveTime: '18:02',
-    isLate: true,
-  },
-  {
-    id: '7',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '8',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '08:52',
-    leaveTime: '18:02',
-    isLate: false,
-  },
-  {
-    id: '9',
-    date: '2024-11-04',
-    type: '일반근무',
-    goTime: '09:10',
-    leaveTime: '18:02',
-    isLate: true,
-  },
-]

@@ -4,6 +4,7 @@ import { ReportColors } from '@/components/utils/ReportColors'
 import { EmployeeReportItem } from '@/types'
 
 export const EmployeeReport = ({
+  id,
   date,
   name,
   type,
@@ -42,7 +43,7 @@ export const EmployeeReport = ({
       </div>
       <div className="w-1/6">
         <button
-          onClick={onClick}
+          onClick={() => onClick(id)}
           className="flex inline-flex justify-center items-center text-default-purple"
         >
           리포트 바로가기

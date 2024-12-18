@@ -2,14 +2,17 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import AuthPage from '@/pages/AuthPage'
 import CommutePage from '@/pages/CommutePage'
+import EmployeeDetailPage from '@/pages/EmployeeDetailPage'
 import EmployeeInfoPage from '@/pages/EmployeeInfoPage'
 import EmployeeReportPage from '@/pages/EmployeeReportPage'
+import { ErrorPage } from '@/pages/ErrorPage'
 import { InnerLayout } from '@/pages/Layout/InnerLayout'
 import { MainLayout } from '@/pages/Layout/MainLayout'
 import MainPage from '@/pages/MainPage'
+import ModifyPasswordPage from '@/pages/ModifyPasswordPage'
+import NewEmployeePage from '@/pages/NewEmployeePage'
 import QRPage from '@/pages/QRPage'
 import ReportPage from '@/pages/ReportPage'
-import ReportDetailPage from '@/pages/ReportPage/ReportDetailPage'
 import TransferDeptPage from '@/pages/TransferDeptPage'
 
 const router = createBrowserRouter([
@@ -54,14 +57,22 @@ const router = createBrowserRouter([
         element: <ReportPage />,
       },
       {
-        path: '/report/detail',
-        element: <ReportDetailPage />,
+        path: '/employee-info/:employeeId',
+        element: <EmployeeDetailPage />,
+      },
+      {
+        path: '/new-employee',
+        element: <NewEmployeePage />,
+      },
+      {
+        path: 'modify-password',
+        element: <ModifyPasswordPage />,
       },
     ],
   },
   {
     path: '*', // 에러 페이지 구현 후 바꿔야 함
-    element: <AuthPage />,
+    element: <ErrorPage />,
   },
 ])
 

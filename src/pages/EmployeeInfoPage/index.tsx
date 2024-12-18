@@ -1,136 +1,98 @@
-import { useState } from 'react'
-import { BiChevronLeft, BiChevronRight, BiShow } from 'react-icons/bi'
-import Slider from 'react-slick'
+import { useEffect, useState } from 'react'
+import { BiShow } from 'react-icons/bi'
+import { useNavigate } from 'react-router-dom'
 
 import 'slick-carousel/slick/slick-theme.css'
 import 'slick-carousel/slick/slick.css'
 
+import { useGetAllEmployees } from '@/api/services/admin/allEmployees.api'
 import {
   ConfirmModal,
   ConfirmModalButton,
 } from '@/components/Modal/ConfirmModal'
 import { FormModal } from '@/components/Modal/FormModal'
-import { ProfileCard } from '@/components/ProfileCard'
-
-import './employeeInfo.css'
-
-function PrevArrow({
-  className,
-  onClick,
-}: {
-  className?: string
-  onClick?: () => void
-}) {
-  return (
-    <BiChevronLeft
-      className={`${className} w-12 h-12 text-text-gray hover:text-text-default absolute -left-10`}
-      onClick={onClick}
-    />
-  )
-}
-
-function NextArrow({
-  className,
-  onClick,
-}: {
-  className?: string
-  onClick?: () => void
-}) {
-  return (
-    <BiChevronRight
-      className={`${className} w-12 h-12 text-text-gray hover:text-text-default absolute -right-10`}
-      onClick={onClick}
-    />
-  )
-}
+import EmployeeSlider from '@/pages/EmployeeInfoPage/EmployeeSlider'
+import LoadingPage from '@/pages/LoadingPage'
 
 export default function EmployeeInfoPage() {
-  const settings = {
-    dots: true,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 5,
-    arrows: true,
-    prevArrow: <PrevArrow />,
-    nextArrow: <NextArrow />,
-  }
+  const navigate = useNavigate()
+  const { data: AllEmployees, isLoading, error } = useGetAllEmployees()
+
   const [confirmIsOpen, setConfirmIsOpen] = useState(false)
   const [formIsOpen, setFormIsOpen] = useState(false)
+  const [groupedEmployees, setGroupedEmployees] = useState<
+    { departName: string; employees: typeof AllEmployees }[]
+  >([])
+  const [selectEmployeeId, setSelectEmployeeId] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
+  const [isReasonValid, setIsReasonValid] = useState(true)
+
+  useEffect(() => {
+    if (AllEmployees && AllEmployees.length > 0) {
+      const grouped = AllEmployees.reduce(
+        (acc, employee) => {
+          const { departName } = employee
+
+          const group = acc.find((item) => item.departName === departName)
+          if (group) {
+            group.employees.push(employee)
+          } else {
+            acc.push({
+              departName,
+              employees: [employee],
+            })
+          }
+          return acc
+        },
+        [] as { departName: string; employees: typeof AllEmployees }[]
+      )
+
+      setGroupedEmployees(grouped)
+    }
+  }, [AllEmployees])
+
+  useEffect(() => {
+    console.log(selectEmployeeId)
+  }, [selectEmployeeId])
+
+  if (isLoading) return <LoadingPage />
+  if (error) throw Error()
+
+  const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setReason(e.target.value)
+  }
+
+  const handleSubmit = () => {
+    if (!reason.trim()) {
+      setIsReasonValid(false)
+      return
+    }
+    setFormIsOpen(false)
+    navigate(`/employee-info/${selectEmployeeId}`)
+  }
 
   return (
-    <div className="w-full h-full pt-5 flex flex-col gap-7">
-      <div className="text-2xl text-text-default font-bold">출퇴근 기록</div>
+    <div className="w-full h-full pt-5 flex flex-col gap-7 text-text-default">
+      <div className="flex justify-between">
+        <div className="text-2xl text-text-default font-bold">직원 조회</div>
+        <button
+          onClick={() => navigate('/new-employee')}
+          className="rounded-sm bg-background-default px-4 font-semibold hover:bg-background-light"
+        >
+          직원 생성
+        </button>
+      </div>
       <div className="w-full flex-1 flex flex-col gap-5 h-full overflow-y-auto">
-        <div>
-          <div className="text-xl text-text-default font-semibold">IT부서</div>
-          <div className="flex items-center justify-center">
-            <div className="flex w-11/12">
-              <Slider
-                {...settings}
-                className=" w-full flex [&_.slick-track]:flex [&_.slick-track]:gap-0 [&_.slick-slide]:flex [&_.slick-slide]:justify-center [&_.slick-slide]:items-center [&_.slick-slide]:w-auto"
-              >
-                {dummyData.map((profile, index) => (
-                  <ProfileCard
-                    key={index}
-                    name={profile.name}
-                    photo={profile.photo}
-                    email={profile.email}
-                    buttonMod={profile.buttonMod}
-                    onButtonClick={() => setConfirmIsOpen(true)}
-                    onClick={() => setConfirmIsOpen(true)}
-                  />
-                ))}
-              </Slider>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div className="text-xl text-text-default font-semibold">경영팀</div>
-          <div className="flex items-center justify-center">
-            <div className="flex w-11/12">
-              <Slider
-                {...settings}
-                className="w-full flex [&_.slick-track]:flex [&_.slick-track]:gap-1 [&_.slick-slide]:flex [&_.slick-slide]:justify-center [&_.slick-slide]:items-center [&_.slick-slide]:w-auto"
-              >
-                {dummyData.map((profile, index) => (
-                  <ProfileCard
-                    key={index}
-                    name={profile.name}
-                    photo={profile.photo}
-                    email={profile.email}
-                    buttonMod={profile.buttonMod}
-                    onButtonClick={() => {}}
-                    onClick={() => {}}
-                  />
-                ))}
-              </Slider>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div className="text-xl text-text-default font-semibold">경영팀</div>
-          <div className="flex items-center justify-center">
-            <div className="flex w-11/12">
-              <Slider
-                {...settings}
-                className="w-full flex [&_.slick-track]:flex [&_.slick-track]:gap-1 [&_.slick-slide]:flex [&_.slick-slide]:justify-center [&_.slick-slide]:items-center [&_.slick-slide]:w-auto"
-              >
-                {dummyData.map((profile, index) => (
-                  <ProfileCard
-                    key={index}
-                    name={profile.name}
-                    photo={profile.photo}
-                    email={profile.email}
-                    buttonMod={profile.buttonMod}
-                    onButtonClick={() => {}}
-                    onClick={() => {}}
-                  />
-                ))}
-              </Slider>
-            </div>
-          </div>
-        </div>
+        {groupedEmployees?.length > 0 &&
+          groupedEmployees.map((group) => (
+            <EmployeeSlider
+              key={group.departName}
+              departName={group.departName}
+              employees={group.employees || []}
+              setConfirmIsOpen={() => setConfirmIsOpen(true)}
+              setSelectEmployeeId={(id: string) => setSelectEmployeeId(id)}
+            />
+          ))}
       </div>
       <ConfirmModal
         isOpen={confirmIsOpen}
@@ -153,98 +115,29 @@ export default function EmployeeInfoPage() {
       />
       <FormModal
         isOpen={formIsOpen}
-        onClose={() => {
-          setFormIsOpen(false)
-        }}
+        onClose={() => setFormIsOpen(false)}
         icon={<BiShow />}
         title="직원 조회 사유"
         description="직원 정보 조회를 위한 사유를 작성해주세요."
         confirmButton={
-          <ConfirmModalButton onClick={() => setFormIsOpen(false)}>
-            확인
-          </ConfirmModalButton>
+          <ConfirmModalButton onClick={handleSubmit}>확인</ConfirmModalButton>
         }
       >
-        <input
-          className="w-full border rounded-md border-text-gray nowrap p-1 focus:outline-none focus:border-default-darkGray"
-          type="text"
-        />
+        <div className="mt-4">
+          <input
+            type="text"
+            value={reason}
+            onChange={handleReasonChange}
+            placeholder="사유를 입력하세요"
+            className={`w-full px-4 py-2 border rounded-md text-sm focus:outline-none ${
+              !isReasonValid ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+          {!isReasonValid && (
+            <p className="text-red-500 text-xs mt-1">사유 작성은 필수입니다.</p>
+          )}
+        </div>
       </FormModal>
     </div>
   )
 }
-
-const dummyData = [
-  {
-    name: '안희정1',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정2',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정3',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정4',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정5',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정6',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정7',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정8',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정9',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정10',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정11',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-  {
-    name: '안희정12',
-    photo: 'https://ifh.cc/g/PVdXh3.jpg',
-    email: 'eyrt6973@naver.com',
-    buttonMod: 'MESSAGE' as const,
-  },
-]

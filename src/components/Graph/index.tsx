@@ -40,7 +40,7 @@ export const Graph = ({ time, date, type }: GraphItem) => {
       },
       series: [
         {
-          name: 'TEAM C',
+          name: '출근 시간',
           type: 'line',
           data: timeInMinutes,
           color: '#3300ff',
@@ -50,9 +50,18 @@ export const Graph = ({ time, date, type }: GraphItem) => {
         width: type === 'big' ? 5 : 3,
         curve: 'smooth',
       },
-      labels: date,
       xaxis: {
-        type: 'datetime',
+        type: 'category',
+        categories: date,
+        labels: {
+          formatter: (value: string) => {
+            if (value) {
+              return value.slice(5)
+            }
+            return ''
+          },
+          rotate: -45,
+        },
       },
       yaxis: {
         show: false,

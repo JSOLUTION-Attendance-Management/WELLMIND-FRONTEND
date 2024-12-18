@@ -32,8 +32,8 @@ export default function RecentGraph({ data }: RecentGraphProps) {
                 <div
                   className={`flex flex-col justify-center items-center font-semibold text-text-white w-24 h-16 ${ReportColors(item.text)} rounded-full p-2`}
                 >
-                  {item.text.split(' ').map((word, index) => (
-                    <span key={index}>{word}</span>
+                  {item.text.split(/, (?![^,]*$)/).map((phrase, index) => (
+                    <span key={index}>{phrase}</span>
                   ))}
                 </div>
                 <img className="h-10" src={dottedLine} alt="dottedLine" />
