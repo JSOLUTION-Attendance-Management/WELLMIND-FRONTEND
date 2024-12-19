@@ -60,13 +60,13 @@ export type TransferDeptItem = {
 export type TransferDeptTable = TransferDeptItem[]
 
 export type EmployeeReportItem = {
-  id: number
+  id: string
   date: string
   name: string
   type: string
   progress: 'Waiting' | 'Done'
   comment: boolean
-  onClick: (id: number) => void
+  onClick: (id: string) => void
 }
 
 export type LoginRequest = {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useGetRecentAttendances } from '@/api/services/attendances/attendances.api'
 import { useGetMyProfileDetail } from '@/api/services/profile/myProfileDetail'
@@ -7,9 +7,12 @@ import LoadingPage from '@/pages/LoadingPage'
 import CommuteGraph from '@/pages/MainPage/SlideMenu/CommuteGraph'
 import DetailInfo from '@/pages/MainPage/SlideMenu/DetailInfo'
 import RecentReport from '@/pages/MainPage/SlideMenu/RecentReport'
+import { useAppDispatch } from '@/store/hooks/useAppDispatch'
+import { setEmployeeId } from '@/store/slices/myEmployeeId'
 
 export default function SlideMenu() {
   const [activeBtn, setActiveBtn] = useState<number>(0)
+  const dispatch = useAppDispatch()
   const {
     data: Attendances,
     isLoading: attendancesLoading,
@@ -25,6 +28,12 @@ export default function SlideMenu() {
     isLoading: detailLoading,
     error: detailError,
   } = useGetMyProfileDetail()
+
+  useEffect(() => {
+    if (ProfileDetail?.employeeId) {
+      dispatch(setEmployeeId({ employeeId: ProfileDetail.employeeId }))
+    }
+  }, [ProfileDetail])
 
   if (attendancesLoading || reportLoading || detailLoading)
     return <LoadingPage />

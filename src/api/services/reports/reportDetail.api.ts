@@ -7,7 +7,7 @@ const getMyReportDetail = async ({
   reportId,
   employeeId,
 }: {
-  reportId: number
+  reportId: string
   employeeId?: string
 }) => {
   const response = await authorizationInstance.get<MyReportDetailItem>(
@@ -24,7 +24,7 @@ export const useGetMyReportDetail = ({
   reportId,
   employeeId,
 }: {
-  reportId: number
+  reportId: string
   employeeId?: string
 }) => {
   return useQuery({
